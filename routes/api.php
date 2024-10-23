@@ -38,6 +38,7 @@ Route::group(['middleware' => 'auth:api','prefix'=>'products'], function($router
     Route::post('/store','store');
     Route::put('/update/{id}','update');
     Route::delete('/destroy/{id}','destroy');
+    Route::get('/search', 'search');
     });
 });
 

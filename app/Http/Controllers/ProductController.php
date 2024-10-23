@@ -118,4 +118,23 @@ class ProductController extends Controller
         }
         else return response()->json('Product not found');
     }
+
+    public function search(Request $request)
+    {
+        $searchTerm = $request->input('query');
+    
+        if (empty($searchTerm)) {
+            return response()->json(['error' => 'Search term cannot be empty'], 400);
+        }
+    
+        $products = Product::where('product_name', 'LIKE', "%{$searchTerm}%")
+            ->orWhere('description', 'LIKE', "%{$searchTerm}%")
+            ->get(); 
+    
+        if ($products->isEmpty()) {
+            return response()->json(['message' => 'No products found'], 404);
+        } else {
+            return response()->json($products, 200);
+        }
+    }
 }
