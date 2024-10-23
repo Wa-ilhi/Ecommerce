@@ -12,29 +12,31 @@ use App\Models\User;
 class AuthController extends Controller
 {
 
+    
     public function __construct() {
-        $this->middleware('auth:api', ['except' => ['login', 'register','logout']]);
+        // Apply auth:api middleware to all routes except login and register
+        $this->middleware('auth:api', ['except' => ['login', 'register']]);
     }
 
     public function login(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users',
             'password' => 'required|string|min:6'
         ]);
-
+    
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
-
-        $user = User::query()->where('email', $request->email)->first();
-
-        $token = auth()->login($user);
-
+    
+        // Use auth attempt to verify email and password
+        if (!$token = auth()->attempt($request->only('email', 'password'))) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+    
         return $this->createNewToken($token);
-
     }
+    
 
     public function register(Request $request)
     {

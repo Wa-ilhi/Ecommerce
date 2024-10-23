@@ -8,6 +8,11 @@ use App\Models\Product;
 
 class ProductController extends Controller
 {
+
+     public function __construct() {
+        $this->middleware('auth:api', ['except' => ['index', 'show']]);
+    }
+
     public function index()
     {
         $products=Product::paginate(10);
@@ -64,7 +69,7 @@ class ProductController extends Controller
 
     public function update($id,Request $request)
     {
-       Validator::make($request->all(),[
+    $validator= Validator::make($request->all(),[
                 'category_id'=>'required|numeric',
                 'product_name'=>'required',
                 'price'=>'required|numeric',
