@@ -34,7 +34,7 @@ Route::group(['middleware' => 'auth:api','prefix'=>'products'], function($router
     Route::controller(ProductController::class)->group(function(){
 
     Route::get('/products','products');
-    Route::get('/show/{id}','show');
+    Route::get('/show/{product_id}','show');
     Route::post('/store','store');
     Route::put('/update/{product_id}','update');
     Route::delete('/destroy/{product_id}','destroy');
