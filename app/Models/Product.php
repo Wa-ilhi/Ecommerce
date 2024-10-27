@@ -4,26 +4,53 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
     use HasFactory;
 
+    
+    protected $table = 'products';
+    protected $primaryKey = 'product_id'; 
+
+    public $incrementing = false; 
+
     protected $fillable = [
-        'category_id',
+          
         'product_name',
         'description',
         'price',
         'stock_quantity',
+        'category',     
     ];
 
+    // Hidden attributes
     protected $hidden = [
         'created_at',
-        'update_at'
+        'updated_at', 
     ];
 
-    public function category(){
-        return $this->belongsTo(category::class,'category_id');
+    
+    public static function getCategories()
+    {
+        return ['shorts', 'pants', 't-shirts', 'shoes', 'hats']; 
+    }
+
+ 
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($product) {
+            $product->product_id = (string) Str::uuid(); // Generate a UUID
+        });
+    }
+
+    public function specs()
+    {
+        return $this->hasMany(ProductSpec::class, 'product_id','product_id');
     }
 
 }

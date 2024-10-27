@@ -11,41 +11,38 @@ class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+        protected $primaryKey = 'user_id'; 
+        protected $keyType = 'string'; 
+        protected $table = 'users';
+    
+        // Define fillable attributes for mass assignment
+        protected $fillable = [
+            'user_id',
+            'first_name',
+            'last_name',
+            'email',
+            'password',
+            'phone_num',
+            'address',
+            'lang_profile',
+            'role_id',
+        ];
+    
+        // Hidden attributes
+        protected $hidden = [
+            'password',
+            'created_at',
+            'updated_at',
+        ];
+    
+        // Define any relationships if necessary
+        public function role()
+        {
+            return $this->belongsTo(Role::class, 'role_id'); // Assuming you have a Role model
+        }
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
-
-     /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
-     *
-     * @return mixed
-     */
+    
     public function getJWTIdentifier()
     {
         return $this->getKey();

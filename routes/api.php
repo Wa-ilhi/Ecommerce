@@ -29,26 +29,27 @@ Route::group(['middleware' => 'api','prefix' => 'auth'], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
-//Products CRUD
+//Products Catalogs
 Route::group(['middleware' => 'auth:api','prefix'=>'products'], function($router){
     Route::controller(ProductController::class)->group(function(){
 
-    Route::get('/index','index');
+    Route::get('/products','products');
     Route::get('/show/{id}','show');
     Route::post('/store','store');
-    Route::put('/update/{id}','update');
-    Route::delete('/destroy/{id}','destroy');
+    Route::put('/update/{product_id}','update');
+    Route::delete('/destroy/{product_id}','destroy');
     Route::get('/search', 'search');
+    Route::get('/showByCategory/{category}', 'showByCategory');
     });
 });
 
-Route::group(['middleware' => 'auth:api','prefix'=>'category'], function($router){
-Route::controller(CategoryController::class)->group(function(){
+// Route::group(['middleware' => 'auth:api','prefix'=>'category'], function($router){
+// Route::controller(CategoryController::class)->group(function(){
 
-    Route::get('/index','index');
-    Route::get('/show/{id}','show');
-    Route::post('/store','store');
-    Route::put('/update_category/{id}','update_category');
-    Route::delete('/delete_category/{id}','delete_category');
-    });
-});
+//     Route::get('/index','index');
+//     Route::get('/show/{id}','show');
+//     Route::post('/store','store');
+//     Route::put('/update_category/{id}','update_category');
+//     Route::delete('/delete_category/{id}','delete_category');
+//     });
+// });
