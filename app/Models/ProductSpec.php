@@ -9,6 +9,8 @@ class ProductSpec extends Model
 
     protected $table = 'product_specs';
     protected $primaryKey = 'spec_id';
+    protected $hidden = ['spec_id'];
+
 
     public $timestamps = false;
 
@@ -18,4 +20,6 @@ class ProductSpec extends Model
     {
         return $this->belongsTo(Product::class, 'product_id', 'product_id');
     }
+
+    
 }

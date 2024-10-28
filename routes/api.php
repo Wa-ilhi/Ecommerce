@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\BuyerProductController;
+use App\Http\Controllers\VisitorProductController;
 use App\Http\Controllers\CategoryController;
 
 
@@ -29,7 +31,13 @@ Route::group(['middleware' => 'api','prefix' => 'auth'], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
-//Products Catalogs
+// Public access
+Route::prefix('products')->group(function() {
+    Route::get('/preshow', [VisitorProductController::class, 'products']); 
+   // Route::get('/showByCategory/{category}', [ProductController::class, 'showByCategory']);
+});
+
+//Authenticated Admin Routes
 Route::group(['middleware' => 'auth:api','prefix'=>'products'], function($router){
     Route::controller(ProductController::class)->group(function(){
 
@@ -42,6 +50,14 @@ Route::group(['middleware' => 'auth:api','prefix'=>'products'], function($router
     Route::get('/showByCategory/{category}', 'showByCategory');
     });
 });
+
+//Authenticated Buyer Routes
+
+
+
+
+
+
 
 // Route::group(['middleware' => 'auth:api','prefix'=>'category'], function($router){
 // Route::controller(CategoryController::class)->group(function(){
