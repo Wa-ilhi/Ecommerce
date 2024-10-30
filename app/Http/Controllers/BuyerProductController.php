@@ -46,10 +46,11 @@ class BuyerProductController extends Controller
     {
         $searchTerm = $request->input('query'); // Get the search term
         $category = $request->input('category'); // Get the category filter
+        $sort = $request->input('sort');
 
-        $singularTerm = preg_replace('/(s|es|ing|ed|er|est)$/', '', $searchTerm); //Filter suffixes
+        $ignore_suffices = preg_replace('/(s|es|ing|ed|er|est)$/', '', $searchTerm); //Filter suffices
 
-        if (strlen($singularTerm) < 4) {
+        if ($ignore_suffices && strlen($ignore_suffices) < 4) {
             return response()->json(['message' => 'Please use a more specific search term.'], 400);
         }
 
@@ -58,9 +59,9 @@ class BuyerProductController extends Controller
 
         // Apply search term if provided
         if ($searchTerm) {
-            $query->where(function($q) use ($singularTerm) {
-                $q->where('product_name', 'LIKE', "%{$singularTerm}%")
-                  ->orWhere('description', 'LIKE', "%{$singularTerm}%");
+            $query->where(function($q) use ($ignore_suffices) {
+                $q->where('product_name', 'LIKE', "%{$ignore_suffices}%")
+                  ->orWhere('description', 'LIKE', "%{$ignore_suffices}%");
             });
         }
 
@@ -78,12 +79,36 @@ class BuyerProductController extends Controller
         if ($request->filled('max_price')) {
             $query->where('price', '<=', $request->input('max_price'));
         }
+
+         // Sort by creation date if 'sort' parameter is provided
+        if ($sort === 'new') {
+            $query->orderBy('created_at', 'desc');
+        } elseif ($sort === 'old') {
+            $query->orderBy('created_at', 'asc');
+        }
+
         $products = $query->get();
 
         if ($products->isEmpty()) {
             return response()->json(['message' => 'No product found'], 404);
-        } else {
-            return response()->json($products, 200);
-        }
+        } 
+            $products->makeHidden(['product_id','status']);
+        
+            $sortingIndicator = $sort === 'new' ? 'Sorted by newest' : 'Sorted by oldest';
+
+            // Prepare the products in a numbered format
+            $numberedProducts = $products->map(function ($product, $index) {
+                return [
+                    'number' => $index + 1,
+                    'product' => $product
+                ];
+            });
+        
+            return response()->json([
+                'message' => $sortingIndicator,
+                'products' => $numberedProducts
+            ], 200);
+          
+        
     }
 }
