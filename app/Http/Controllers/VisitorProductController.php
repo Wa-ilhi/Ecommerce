@@ -19,9 +19,9 @@ class VisitorProductController extends Controller
    
             $products = Product::with('specs')->paginate(5); 
             
-            // Hide product_id attributes for unauthenticated users
+            // Hide specific attributes for unauthenticated users
             $products->getCollection()->transform(function ($product) {
-                return $product->makeHidden('product_id'); 
+                return $product->makeHidden(['product_id','status']); 
             });
         }
 
