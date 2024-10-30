@@ -41,10 +41,12 @@ Route::prefix('products')->group(function() {
 Route::group(['middleware' => 'auth:api','prefix'=>'products'], function($router){
     Route::controller(ProductController::class)->group(function(){
 
-    Route::get('/products','products');
+    Route::get('/listedProducts','products');
+    Route::get('/pendingProducts','getPendingProducts');
     Route::get('/show/{product_id}','show');
     Route::post('/store','store');
-    Route::put('/update/{product_id}','update');
+    Route::post('/update/{product_id}','update');
+    Route::put('/approveProduct/{product_id}','approveProduct');
     Route::delete('/destroy/{product_id}','destroy');
     Route::get('/search', 'search');
     Route::get('/showByCategory/{category}', 'showByCategory');
