@@ -22,7 +22,8 @@ class Product extends Model
         'description',
         'price',
         'stock_quantity',
-        'category',     
+        'category', 
+        'status',    
     ];
 
     // Hidden attributes
