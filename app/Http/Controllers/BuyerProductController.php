@@ -15,12 +15,12 @@ class BuyerProductController extends Controller
             // If authenticated, retrieve all products without pagination
             $products = Product::with('specs')->get();
         } else {
-            // If not authenticated, paginate the products (e.g., 5 per page)
-            $products = Product::with('specs')->paginate(5); // Adjust the number as needed
+            // If not authenticated, paginate the products
+            $products = Product::with('specs')->paginate(5); 
             
-            // Hide product_id and spec_id for unauthenticated users
+            // Hide specific attributes for unauthenticated users
             $products->getCollection()->transform(function ($product) {
-                return $product->makeHidden('product_id'); // Hide both attributes
+                return $product->makeHidden('product_id');
             });
         }
 
