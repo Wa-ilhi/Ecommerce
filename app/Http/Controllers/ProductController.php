@@ -196,7 +196,7 @@ class ProductController extends Controller
     {
         $searchTerm = $request->input('query'); // Get the search term
         $category = $request->input('category'); // Get the category filter
-        $sort = $request->input('sort');
+        $sort = $request->input('sort'); // Get the sorting filter
 
         $ignore_suffices = preg_replace('/(s|es|ing|ed|er|est)$/', '', $searchTerm); //Filter suffices
 
@@ -290,7 +290,7 @@ class ProductController extends Controller
         $product->status = 'active';
         $product->save();
 
-        return response()->json(['message' => 'Product approved and listed successfully']);
+        return response()->json(['message' => 'Product published successfully']);
     }
 
 
