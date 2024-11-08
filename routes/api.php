@@ -25,20 +25,25 @@ use App\Http\Controllers\CategoryController;
 // });
 
 //User Authentication
-Route::group(['middleware' => 'api','prefix' => 'auth'], function () {
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/logout', [AuthController::class, 'logout']);
+//Route::group(['middleware' => 'api','prefix' => 'auth'], function () {
+//   Route::post('/login', [AuthController::class, 'login']);
+//    Route::post('/register', [AuthController::class, 'register']);
+//    Route::post('/logout', [AuthController::class, 'logout']);
+//});
+
+
+
+
+// Public/Visitor's Access
+Route::prefix('visitor-products')->controller(VisitorProductController::class)->group(function() {
+    Route::get('/preshow', 'products');
+    Route::get('/showByCategory/{category}', 'showByCategory');
+    Route::get('/search', 'search');
 });
 
-// Public access
-Route::prefix('products')->group(function() {
-    Route::get('/preshow', [VisitorProductController::class, 'products']); 
-   // Route::get('/showByCategory/{category}', [ProductController::class, 'showByCategory']);
-});
 
-//Authenticated Admin Routes
-Route::group(['middleware' => 'auth:api','prefix'=>'products'], function($router){
+//Authenticated Seller Routes
+Route::group(['middleware' => 'sellerAuth','prefix'=>'seller-products'], function($router){
     Route::controller(ProductController::class)->group(function(){
 
     Route::get('/listedProducts','products');
@@ -54,20 +59,17 @@ Route::group(['middleware' => 'auth:api','prefix'=>'products'], function($router
 });
 
 //Authenticated Buyer Routes
+Route::group(['middleware' => 'buyerAuth','prefix'=>'buyer-products'], function($router){
+    Route::controller(BuyerProductController::class)->group(function(){
+      
+    Route::get('/all','buyerListedProducts');      
+    Route::get('/search', 'search');
+    Route::get('/sortby', 'sortProducts');
+    Route::get('/showByCategory/{category}', 'showByCategory');
+    });
+});
 
 
 
 
 
-
-
-// Route::group(['middleware' => 'auth:api','prefix'=>'category'], function($router){
-// Route::controller(CategoryController::class)->group(function(){
-
-//     Route::get('/index','index');
-//     Route::get('/show/{id}','show');
-//     Route::post('/store','store');
-//     Route::put('/update_category/{id}','update_category');
-//     Route::delete('/delete_category/{id}','delete_category');
-//     });
-// });

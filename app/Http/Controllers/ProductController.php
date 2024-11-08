@@ -19,9 +19,14 @@ class ProductController extends Controller
         ->where('status', 'active')
         ->get();
 
+        if ($products->isEmpty()) {
+            return response()->json(['message' => 'No active products found'], 404);
+        }
+
         return response()->json($products);
     }
 
+   
 
     public function show($product_id): JsonResponse
     {
@@ -174,7 +179,7 @@ class ProductController extends Controller
             return response()->json(['message' => 'Product not found'], 404);
         }
     
-        // Check if there are media files and delete each from storage
+        // Checks if there are media files and delete each from storage
         if ($product->media->isNotEmpty()) {
             foreach ($product->media as $media) {
                 if (\Storage::disk('public')->exists($media->file_name)) {
@@ -215,7 +220,7 @@ class ProductController extends Controller
             });
         }
 
-        // Apply category filter if provided
+        // Filter Category
         if ($category) {
             $query->where('category', $category);
         }
@@ -230,7 +235,7 @@ class ProductController extends Controller
             $query->where('price', '<=', $request->input('max_price'));
         }
 
-         // Sort by creation date if 'sort' parameter is provided
+         // Apply 'sort' parameter
         if ($sort === 'new') {
             $query->orderBy('created_at', 'desc');
         } elseif ($sort === 'old') {

@@ -9,22 +9,11 @@ use Illuminate\Http\JsonResponse;
 
 class BuyerProductController extends Controller
 {
-    public function products(): JsonResponse
+    public function buyerListedProducts(): JsonResponse
     {
-        if (auth()->check()) {
-            // If authenticated, retrieve all products without pagination
-            $products = Product::with('specs')->get();
-        } else {
-            // If not authenticated, paginate the products
-            $products = Product::with('specs')->paginate(5); 
-            
-            // Hide specific attributes for unauthenticated users
-            $products->getCollection()->transform(function ($product) {
-                return $product->makeHidden('product_id');
-            });
-        }
+        $products = Product::where('status', 'active')
+            ->get(['product_name','description','stock_quantity','category', 'price']);
 
-        
         return response()->json($products);
     }
 
@@ -54,10 +43,10 @@ class BuyerProductController extends Controller
             return response()->json(['message' => 'Please use a more specific search term.'], 400);
         }
 
-        // Build the query
+        
         $query = Product::query();
 
-        // Apply search term if provided
+        // Search term query
         if ($searchTerm) {
             $query->where(function($q) use ($ignore_suffices) {
                 $q->where('product_name', 'LIKE', "%{$ignore_suffices}%")
@@ -65,7 +54,7 @@ class BuyerProductController extends Controller
             });
         }
 
-        // Apply category filter if provided
+        // Filter by category
         if ($category) {
             $query->where('category', $category);
         }
@@ -80,7 +69,7 @@ class BuyerProductController extends Controller
             $query->where('price', '<=', $request->input('max_price'));
         }
 
-         // Sort by creation date if 'sort' parameter is provided
+         // Sort by creation date 
         if ($sort === 'new') {
             $query->orderBy('created_at', 'desc');
         } elseif ($sort === 'old') {
@@ -111,4 +100,44 @@ class BuyerProductController extends Controller
           
         
     }
+
+    public function sortProducts(Request $request): JsonResponse
+    {
+        $sort = $request->input('sort');
+
+        $query = Product::with(['specs', 'media'])->where('status', 'active');
+
+        // Apply 'sort' parameter
+        if ($sort === 'new') {
+            $query->orderBy('created_at', 'desc');
+            $sortingIndicator = 'Sorted by newest';
+        } elseif ($sort === 'old') {
+            $query->orderBy('created_at', 'asc');
+            $sortingIndicator = 'Sorted by oldest';
+        } else {
+            $sortingIndicator = 'No specific sorting applied';
+        }
+
+        $products = $query->get();
+
+        if ($products->isEmpty()) {
+            return response()->json(['message' => 'No product found'], 404);
+        }
+
+        $products->makeHidden(['product_id', 'status']);
+
+        
+        $numberedProducts = $products->map(function ($product, $index) {
+            return [
+                'number' => $index + 1,
+                'product' => $product
+            ];
+        });
+
+        return response()->json([
+            'message' => $sortingIndicator,
+            'products' => $numberedProducts
+        ], 200);
+    }
+
 }
