@@ -39,6 +39,7 @@ class ProductController extends Controller
         return response()->json($product);
     }
 
+    // add specs and media
     public function showByCategory($category): JsonResponse
     {
         
@@ -46,7 +47,9 @@ class ProductController extends Controller
             return response()->json(['message' => 'Invalid category'], 400);
         }
 
-        $products = Product::where('category', $category)->get();
+        $products = Product::with(['media', 'specs']) 
+        ->where('category', $category)
+        ->get();
 
         return response()->json($products);
     }
@@ -197,6 +200,7 @@ class ProductController extends Controller
     }
     
 
+    // add specs 
     public function search(Request $request): JsonResponse
     {
         $searchTerm = $request->input('query'); // Get the search term
@@ -210,7 +214,7 @@ class ProductController extends Controller
         }
 
         // Build the query
-        $query = Product::query();
+        $query = Product::with(['media', 'specs']);
 
         // Apply search term if provided
         if ($searchTerm) {
@@ -242,7 +246,7 @@ class ProductController extends Controller
             $query->orderBy('created_at', 'asc');
         }
 
-        $products = $query->get();
+        $products = $query->with('media')->get();
 
         if ($products->isEmpty()) {
             return response()->json(['message' => 'No product found'], 404);
@@ -255,7 +259,8 @@ class ProductController extends Controller
             $numberedProducts = $products->map(function ($product, $index) {
                 return [
                     'number' => $index + 1,
-                    'product' => $product
+                    'product' => $product,
+                    'media' => $product->media
                 ];
             });
         

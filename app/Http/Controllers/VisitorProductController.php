@@ -16,15 +16,18 @@ class VisitorProductController extends Controller
         if (auth()->check()) {     
             $products = Product::with('specs')->get();
         } else {
-            $products = Product::with('specs')->paginate(5);
+            $products = Product::with(['specs', 'media'])->paginate(5);
 
             // Hide specific attributes for unauthenticated users
             $products->getCollection()->transform(function ($product) {
                 $product->makeHidden(['product_id', 'status']); // Hide product_id and status
 
-                // Also hide product_id within each spec
+                // Also hide product_id
                 $product->specs->each(function ($spec) {
                     $spec->makeHidden(['product_id']);
+                });
+                $product->media->each(function ($media) {
+                    $media->makeHidden(['product_id']);
                 });
 
                 return $product;
@@ -35,18 +38,33 @@ class VisitorProductController extends Controller
     }
 
 
-    //under processing pa
+    
     public function showByCategory($category): JsonResponse
     {
-        
         if (!in_array($category, ['shorts', 'pants', 't-shirts', 'shoes', 'hats'])) {
             return response()->json(['message' => 'Invalid category'], 400);
         }
-
-        $products = Product::where('category', $category)->get();
-
+    
+        $products = Product::with(['media', 'specs']) 
+                    ->where('category', $category)
+                    ->get()
+                    ->makeHidden(['product_id', 'status']);
+    
+       
+        $products->each(function ($product) {
+            if ($product->relationLoaded('media')) {
+                $product->media->each(function ($media) {
+                    $media->makeHidden(['product_id']);
+                });
+            }
+            if ($product->relationLoaded('specs')) {
+                $product->specs->makeHidden(['product_id']); 
+            }
+        });
+    
         return response()->json($products);
     }
+    
 
     public function search(Request $request): JsonResponse
     {
@@ -54,14 +72,14 @@ class VisitorProductController extends Controller
         $category = $request->input('category'); // Get the category filter
         $sort = $request->input('sort'); // Get the sorting filter
 
-        $ignore_suffices = preg_replace('/(s|es|ing|ed|er|est)$/', '', $searchTerm); //Filter suffices
+        $ignore_suffices = preg_replace('/(s|ing|ed|er|est)$/', '', $searchTerm); //Filter suffices
 
         if ($ignore_suffices && strlen($ignore_suffices) < 4) {
             return response()->json(['message' => 'Please use a more specific search term.'], 400);
         }
 
         // Build the query
-        $query = Product::query();
+        $query = Product::with(['media', 'specs']);
 
         // Apply search term if provided
         if ($searchTerm) {
@@ -99,7 +117,19 @@ class VisitorProductController extends Controller
             return response()->json(['message' => 'No product found'], 404);
         } 
             $products->makeHidden(['product_id','status']);
-        
+
+            // Hide product_id in the related media and specs
+            $products->each(function ($product) {
+                if ($product->relationLoaded('media')) {
+                    $product->media->each(function ($media) {
+                        $media->makeHidden(['product_id']);
+                    });
+                }
+                if ($product->relationLoaded('specs')) {
+                    $product->specs->makeHidden(['product_id']);
+                }
+            });
+                
             $sortingIndicator = $sort === 'new' ? 'Sorted by newest' : 'Sorted by oldest';
 
             // Prepare the products in a numbered format
